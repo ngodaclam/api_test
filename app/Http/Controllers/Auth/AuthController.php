@@ -28,22 +28,16 @@ class AuthController extends Controller
         $request->validate([
             'name' => 'required|string',
             'email' => 'required|string|email|unique:users',
-            'password' => 'required|string|confirmed'
+            'password' => 'required|string'
         ]);
 
         $user = new User([
             'name' => $request->name,
             'email' => $request->email,
-            'password' => bcrypt($request->password),
-            'activation_token' => str_random(60)
+            'password' => bcrypt($request->password)
         ]);
 
         $user->save();
-
-        $avatar = Avatar::create($user->name)->getImageObject()->encode('png');
-        Storage::put('avatars/'.$user->id.'/avatar.png', (string) $avatar);
-
-        $user->notify(new SignupActivate($user));
 
         return response()->json([
             'message' => __('auth.signup_success')
